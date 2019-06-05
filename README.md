@@ -11,11 +11,22 @@ Provides the authentication for all subdomains of overattribution.com.
 npm run deploy
 ```
 
-## Manual Setup
+## Manual Setup (required)
 
-`App integration` and `Federation` currently unavailable in CloudFormation template.
+One-time setup of the AWS infrastructure.
 
-Manual steps:
+Manual steps required when CloudFormation templates do not support the required setup.
+
+Configurations:
 
 - App Integration
   - Domain name
+- Federation
+  - Identity Providers
+
+## Manually adding a client (optional)
+
+- Add a client in `User Pool -> General Settings -> App clients`
+- Update client settings in `User Pool -> App integration -> App client settings`
+- Add a provider in `Identity Pool -> Authentication providers -> Cognito`
+
