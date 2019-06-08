@@ -19,10 +19,11 @@ Manual steps required when CloudFormation templates do not support the required 
 
 Configurations:
 
-- App Integration
-  - Domain name
-- Federation
-  - Identity Providers
+- Cognito User Pool
+  - App Integration
+    - Domain name
+  - Federation
+    - Identity Providers
 
 ## Manually adding a client (optional)
 
