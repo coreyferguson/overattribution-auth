@@ -100,7 +100,7 @@ resources:
                 - Effect: Allow
                   Action:
                     - "execute-api:Invoke"
-                  Resource: "arn:aws:execute-api:us-west-2:863138142000:lbjlned1ph/${self:provider.stage}/*/*"
+                  Resource: "arn:aws:execute-api:us-west-2:863138142000:*/${self:provider.stage}/*/*"
 
     IdentityPoolRoleAttachmentOverAttribution:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
