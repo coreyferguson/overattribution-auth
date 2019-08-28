@@ -4,12 +4,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "deploy": "./node_modules/.bin/sls deploy"
+    "deploy": "./node_modules/.bin/sls deploy",
+    "test": "./node_modules/.bin/mocha test/**/*.spec.js"
   },
   "keywords": [],
   "author": "Corey Ferguson <corey.t.ferguson@gmail.com>",
   "license": "ISC",
   "devDependencies": {
-    "serverless": "^1.44.1"
+    "aws-sdk": "^2.519.0",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "install": "^0.13.0",
+    "mocha": "^6.2.0",
+    "npm": "^6.11.2",
+    "serverless": "^1.44.1",
+    "sinon": "^7.4.1",
+    "sinon-chai": "^3.3.0"
   }
 }
