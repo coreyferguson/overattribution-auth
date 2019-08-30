@@ -29,7 +29,7 @@ class CognitoUserPoolDomain extends BuildCommand {
       }).promise();
     } catch (err) {
       if (/CNAMEAlreadyExists/.test(err.message)) {
-        console.error('ERROR: CNAME already exists. Try `npm run remove` and redeploy.');
+        console.error('ERROR: CNAME already exists. Try waiting 15 minutes and redeploy.');
       }
       throw err;
     }
