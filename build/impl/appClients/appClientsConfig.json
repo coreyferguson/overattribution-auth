@@ -1,0 +1,68 @@
+{
+  "appClients": [
+    {
+      "AllowedOAuthFlows": [
+        "implicit"
+      ],
+      "AllowedOAuthFlowsUserPoolClient": true,
+      "AllowedOAuthScopes": [
+        "email",
+        "openid",
+        "profile"
+      ],
+      "CallbackURLs": [
+        "https://flashcards-dev.overattribution.com/oauth/callback"
+      ],
+      "ClientName": "flashcards",
+      "GenerateSecret": false,
+      "LogoutURLs": [
+        "https://flashcards-dev.overattribution.com/oauth/signout"
+      ],
+      "ReadAttributes": [
+        "address",
+        "birthdate",
+        "email",
+        "email_verified",
+        "family_name",
+        "gender",
+        "given_name",
+        "locale",
+        "middle_name",
+        "name",
+        "nickname",
+        "phone_number",
+        "phone_number_verified",
+        "picture",
+        "preferred_username",
+        "profile",
+        "updated_at",
+        "website",
+        "zoneinfo"
+      ],
+      "RefreshTokenValidity": 30,
+      "SupportedIdentityProviders": [
+        "COGNITO",
+        "Google"
+      ],
+      "WriteAttributes": [
+        "address",
+        "birthdate",
+        "email",
+        "family_name",
+        "gender",
+        "given_name",
+        "locale",
+        "middle_name",
+        "name",
+        "nickname",
+        "phone_number",
+        "picture",
+        "preferred_username",
+        "profile",
+        "updated_at",
+        "website",
+        "zoneinfo"
+      ]
+    }
+  ]
+}
