@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "deploy": "./node_modules/.bin/sls deploy",
-    "test": "./node_modules/.bin/mocha test/**/*.spec.js"
+    "deploy": "./node_modules/.bin/sls deploy && node scripts/deploy dev",
+    "remove": "node scripts/remove dev && ./node_modules/.bin/sls remove",
+    "test": "./node_modules/.bin/mocha test/**/*.spec.js",
+    "test:watch": "npm test -- --watch --reporter progress"
   },
   "keywords": [],
   "author": "Corey Ferguson <corey.t.ferguson@gmail.com>",

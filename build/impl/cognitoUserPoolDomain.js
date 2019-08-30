@@ -14,7 +14,7 @@ class CognitoUserPoolDomain extends BuildCommand {
   }
 
   getName() {
-    return 'CognitoUserPoolDomain';
+    return 'cognitoUserPoolDomain';
   }
 
   async do(stage) {
@@ -29,7 +29,7 @@ class CognitoUserPoolDomain extends BuildCommand {
       }).promise();
     } catch (err) {
       if (/CNAMEAlreadyExists/.test(err.message)) {
-        console.error('ERROR: CNAME already exists. Try `./node_modules/.bin/sls remove` and redeploy.');
+        console.error('ERROR: CNAME already exists. Try `npm run remove` and redeploy.');
       }
       throw err;
     }

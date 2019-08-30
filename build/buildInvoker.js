@@ -1,15 +1,16 @@
 
-const runList = require('./defaultBuildCommandRunList');
+const defaultRunList = require('./defaultBuildCommandRunList');
 
 class BuildInvoker {
 
   constructor(options) {
     options = options || {};
-    this.runList = options.runList || runList;
+    this.defaultRunList = options.defaultRunList || defaultRunList;
   }
 
-  async deploy(stage) {
-    for (let command of this.runList) {
+  async deploy(stage, runList) {
+    runList = runList && runList.length>0 ? runList : this.defaultRunList;
+    for (let command of runList) {
       const isDone = await command.isDone(stage);
       if (!isDone) {
         console.info('Deploying ' + command.getName());
@@ -21,10 +22,11 @@ class BuildInvoker {
     }
   }
 
-  async remove(stage) {
+  async remove(stage, runList) {
+    runList = runList && runList.length>0 ? runList : this.defaultRunList;
     let command, isDone;
-    for (let i=this.runList.length-1; i>=0; i--) {
-      command = this.runList[i];
+    for (let i=runList.length-1; i>=0; i--) {
+      command = runList[i];
       isDone = await command.isDone(stage);
       if (isDone) {
         console.info('Removing ' + command.getName());

@@ -31,7 +31,7 @@ describe('CognitoUserPoolDomain', () => {
     const command = new CognitoUserPoolDomain({ userPool });
     sandbox.stub(command, 'getUserPoolId').returns('us-west-2_aBcDeFgHi');
     sandbox.stub(userPool, 'createUserPoolDomain').returns({ promise: () => Promise.reject(new Error('oops')) });
-    await expect(command.do('dev')).to.be.rejectedWith('oops');
+    await expect(command.do('dev')).to.eventually.be.rejectedWith('oops');
   });
 
   it('do - CNAMEAlreadyExists', async () => {
@@ -39,14 +39,14 @@ describe('CognitoUserPoolDomain', () => {
     sandbox.stub(command, 'getUserPoolId').returns('us-west-2_aBcDeFgHi');
     sandbox.stub(userPool, 'createUserPoolDomain').returns({ promise: () => Promise.reject(new Error('InvalidParameterException: One or more of the CNAMEs you provided are already associated with a different resource. (Service: AmazonCloudFront; Status Code: 409; Error Code: CNAMEAlreadyExists; Request ID: d67bedf3-cadd-11e9-a61f-c578a76c3695)')) });
     sandbox.stub(console, 'error');
-    await expect(command.do('dev')).to.be.rejectedWith('CNAMEAlreadyExists');
+    await expect(command.do('dev')).to.eventually.be.rejectedWith('CNAMEAlreadyExists');
   });
 
   it('undo - unknown error', async () => {
     const command = new CognitoUserPoolDomain({ userPool });
     sandbox.stub(command, 'getUserPoolId').returns('us-west-2_aBcDeFgHi');
     sandbox.stub(userPool, 'deleteUserPoolDomain').returns({ promise: () => Promise.reject(new Error('oops')) });
-    await expect(command.undo('dev')).to.be.rejectedWith('oops');
+    await expect(command.undo('dev')).to.eventually.be.rejectedWith('oops');
   });
 
   it('getUserPoolId - success', async () => {
@@ -70,14 +70,16 @@ describe('CognitoUserPoolDomain', () => {
   it('getUserPoolId - unknown error', async () => {
     const command = new CognitoUserPoolDomain({ userPool });
     sandbox.stub(userPool, 'listUserPools').returns({ promise: () => Promise.reject(new Error('oops')) });
-    await expect(command.getUserPoolId('dev')).to.be.rejected;
+    await expect(command.getUserPoolId('dev')).to.eventually.be.rejected;
   });
 
   it('getUserPoolId - no pools', async () => {
     const command = new CognitoUserPoolDomain({ userPool });
     const response = { "UserPools": [] };
     sandbox.stub(userPool, 'listUserPools').returns({ promise: () => Promise.resolve(response) });
-    await expect(command.getUserPoolId('dev')).to.be.rejectedWith('No User Pool');
+    await expect(command.getUserPoolId('dev')).to.eventually.be.rejectedWith('No User Pool');
   });
+
+  it('getUserPoolId - paginated results');
 
 });
