@@ -1,6 +1,7 @@
 
 const AWS = require('aws-sdk');
 const BuildCommand = require('../BuildCommand');
+const userPoolFacade = require('../aws-facades/cognitoUserPoolFacade');
 
 class CognitoUserPoolDomain extends BuildCommand {
 
@@ -10,7 +11,7 @@ class CognitoUserPoolDomain extends BuildCommand {
     this.userPool = options.userPool
       || new AWS.CognitoIdentityServiceProvider({ apiVersion: '2016-04-18', region: 'us-west-2' });
     this.domain = options.domain || 'auth.overattribution.com';   // manually registered domain
-    this.userPoolName = options.userPoolName || 'auth-overattribution'; // from serverless.yml
+    this.userPoolFacade = options.userPoolFacade || userPoolFacade;
   }
 
   getName() {
@@ -18,7 +19,7 @@ class CognitoUserPoolDomain extends BuildCommand {
   }
 
   async do(stage) {
-    const userPoolId = await this.getUserPoolId(stage);
+    const userPoolId = await this.userPoolFacade.getUserPoolId(stage);
     try {
       await this.userPool.createUserPoolDomain({
         Domain: this.domain,
@@ -36,34 +37,13 @@ class CognitoUserPoolDomain extends BuildCommand {
   }
 
   async undo(stage) {
-    const userPoolId = await this.getUserPoolId(stage);
+    const userPoolId = await this.userPoolFacade.getUserPoolId(stage);
     await this.userPool.deleteUserPoolDomain({ Domain: this.domain, UserPoolId: userPoolId }).promise();
   }
 
   async isDone(stage) {
     const meta = await this.userPool.describeUserPoolDomain({ Domain: this.domain }).promise();
     return !!meta.DomainDescription.Status;
-  }
-
-  async getUserPoolId(stage) {
-    const userPoolName = this.getUserPoolName(stage);
-    let data, NextToken, userPoolId;
-    do {
-      data = await this.userPool.listUserPools({ MaxResults: 60, NextToken }).promise();
-      for (let userPool of data.UserPools) {
-        if (userPool.Name === userPoolName) {
-          userPoolId = userPool.Id;
-          break;
-        }
-      }
-      NextToken = data.NextToken;
-    } while (!userPoolId && NextToken);
-    if (!userPoolId) throw new Error(`No User Pool found in stage=${stage}`);
-    return userPoolId;
-  }
-
-  getUserPoolName(stage) {
-    return `${this.userPoolName}-${stage}`;
   }
 
 }
