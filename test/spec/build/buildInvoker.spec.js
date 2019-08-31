@@ -26,7 +26,7 @@ describe('buildInvoker', () => {
   it('deploy - runs and logs all commands', async () => {
     const defaultRunList = createStubbedRunList();
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.deploy('dev');
+    await invoker.deploy('test');
     expect(defaultRunList[0].do).to.be.calledOnce;
     expect(defaultRunList[0].undo).to.not.be.called;
     expect(defaultRunList[1].do).to.be.calledOnce;
@@ -40,7 +40,7 @@ describe('buildInvoker', () => {
   it('deploy - runs commands in order', async () => {
     const defaultRunList = createStubbedRunList();
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.deploy('dev');
+    await invoker.deploy('test');
     expect(defaultRunList[0].do).to.be.calledBefore(defaultRunList[1].do);
   });
 
@@ -48,7 +48,7 @@ describe('buildInvoker', () => {
     const defaultRunList = createStubbedRunList();
     defaultRunList[0]._isDone = true;
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.deploy('dev');
+    await invoker.deploy('test');
     expect(defaultRunList[0].do).to.not.be.called;
     expect(defaultRunList[1].do).to.be.called;
   });
@@ -56,21 +56,21 @@ describe('buildInvoker', () => {
   it('deploy - stage passed to commands', async () => {
     const defaultRunList = createStubbedRunList();
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.deploy('dev');
-    expect(defaultRunList[0].do).to.be.calledWith('dev');
+    await invoker.deploy('test');
+    expect(defaultRunList[0].do).to.be.calledWith('test');
   });
 
   it('deploy - logs messages to console', async () => {
     const defaultRunList = createStubbedRunList();
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.deploy('dev');
+    await invoker.deploy('test');
   });
 
   it('deploy - runs defaultRunList when runList is empty array', async () => {
     const defaultRunList = createStubbedRunList();
     const runList = [];
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.deploy('dev', runList);
+    await invoker.deploy('test', runList);
     expect(defaultRunList[0].do).to.be.called;
     expect(defaultRunList[1].do).to.be.called;
   });
@@ -79,7 +79,7 @@ describe('buildInvoker', () => {
     const defaultRunList = createStubbedRunList();
     const runList = [ createStubbedRunList()[1] ];
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.deploy('dev', runList);
+    await invoker.deploy('test', runList);
     expect(defaultRunList[0].do).to.not.be.called;
     expect(defaultRunList[1].do).to.not.be.called;
     expect(runList[0].do).to.be.called;
@@ -89,7 +89,7 @@ describe('buildInvoker', () => {
     const defaultRunList = createStubbedRunList();
     defaultRunList[0]._isDone = defaultRunList[1]._isDone = true;
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.remove('dev');
+    await invoker.remove('test');
     expect(defaultRunList[0].undo).to.be.calledOnce;
     expect(defaultRunList[0].do).to.not.be.called;
     expect(defaultRunList[1].undo).to.be.calledOnce;
@@ -104,7 +104,7 @@ describe('buildInvoker', () => {
     const defaultRunList = createStubbedRunList();
     defaultRunList[0]._isDone = defaultRunList[1]._isDone = true;
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.remove('dev');
+    await invoker.remove('test');
     expect(defaultRunList[1].undo).to.be.calledBefore(defaultRunList[0].undo);
   });
 
@@ -112,7 +112,7 @@ describe('buildInvoker', () => {
     const defaultRunList = createStubbedRunList();
     defaultRunList[1]._isDone = true;
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.remove('dev');
+    await invoker.remove('test');
     expect(defaultRunList[0].undo).to.not.be.called;
     expect(defaultRunList[1].undo).to.be.called;
   });
@@ -123,8 +123,8 @@ describe('buildInvoker', () => {
     defaultRunList[0]._isDone = true;
     defaultRunList[1]._isDone = true;
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.remove('dev');
-    expect(defaultRunList[1].undo).to.be.calledWith('dev');
+    await invoker.remove('test');
+    expect(defaultRunList[1].undo).to.be.calledWith('test');
   });
 
   it('remove - runs defaultRunList when runList is empty array', async () => {
@@ -133,7 +133,7 @@ describe('buildInvoker', () => {
     defaultRunList[1]._isDone = true;
     const runList = [];
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.remove('dev', runList);
+    await invoker.remove('test', runList);
     expect(defaultRunList[0].undo).to.be.called;
     expect(defaultRunList[1].undo).to.be.called;
   });
@@ -145,7 +145,7 @@ describe('buildInvoker', () => {
     const runList = [ createStubbedRunList()[1] ];
     runList[0]._isDone = true;
     const invoker = new BuildInvoker({ defaultRunList });
-    await invoker.remove('dev', runList);
+    await invoker.remove('test', runList);
     expect(defaultRunList[0].undo).to.not.be.called;
     expect(defaultRunList[1].undo).to.not.be.called;
     expect(runList[0].undo).to.be.called;

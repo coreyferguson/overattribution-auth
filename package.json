@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "deploy": "./node_modules/.bin/sls deploy && node scripts/deploy dev",
-    "remove": "node scripts/remove dev && ./node_modules/.bin/sls remove",
+    "deploy": "./node_modules/.bin/sls deploy && node scripts/deploy",
+    "remove": "node scripts/remove && ./node_modules/.bin/sls remove",
     "test": "./node_modules/.bin/mocha test/**/*.spec.js --reporter progress",
     "test:watch": "npm test -- --watch"
   },
@@ -16,6 +16,7 @@
     "aws-sdk": "^2.519.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
+    "dot": "^1.1.2",
     "install": "^0.13.0",
     "mocha": "^6.2.0",
     "npm": "^6.11.2",

@@ -3,6 +3,7 @@ const BuildCommand = require('../../BuildCommand');
 const AWS = require('aws-sdk');
 const userPoolFacade = require('../../aws-facades/cognitoUserPoolFacade');
 const appClientsConfig = require('./appClientsConfig.json');
+const doT = require('dot');
 
 class AppClients extends BuildCommand {
 
@@ -30,7 +31,7 @@ class AppClients extends BuildCommand {
       else toBeDeleted.set(client.ClientName, client);
     }
     for (let [,client] of toBeCreated) {
-      await this.createClient(client, UserPoolId);
+      await this.createClient(stage, client, UserPoolId);
     }
     for (let [,client] of toBeDeleted) {
       await this.deleteClient(client, UserPoolId);
@@ -57,9 +58,12 @@ class AppClients extends BuildCommand {
     return expected.size === 0;
   }
 
-  async createClient(client, UserPoolId) {
+  async createClient(stage, client, UserPoolId) {
     const params = Object.assign({}, client, { UserPoolId });
-    await this.userPool.createUserPoolClient(params).promise();
+    const paramsAsString = JSON.stringify(params);
+    const interpolated = doT.template(paramsAsString)({ stage });
+    const newParams = JSON.parse(interpolated);
+    await this.userPool.createUserPoolClient(newParams).promise();
   }
 
   async deleteClient(client, UserPoolId) {

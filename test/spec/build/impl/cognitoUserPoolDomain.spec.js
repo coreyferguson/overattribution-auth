@@ -24,7 +24,7 @@ describe('cognitoUserPoolDomain', () => {
     sandbox
       .stub(userPool, 'describeUserPoolDomain')
       .returns({ promise: () => Promise.resolve(response) });
-    const isDone = await command.isDone('dev');
+    const isDone = await command.isDone('test');
     expect(isDone).to.be.false;
   });
 
@@ -32,7 +32,7 @@ describe('cognitoUserPoolDomain', () => {
     const command = new CognitoUserPoolDomain({ userPool, userPoolFacade });
     sandbox.stub(userPoolFacade, 'getUserPoolId').returns('us-west-2_aBcDeFgHi');
     sandbox.stub(userPool, 'createUserPoolDomain').returns({ promise: () => Promise.reject(new Error('oops')) });
-    await expect(command.do('dev')).to.eventually.be.rejectedWith('oops');
+    await expect(command.do('test')).to.eventually.be.rejectedWith('oops');
   });
 
   it('do - CNAMEAlreadyExists', async () => {
@@ -40,14 +40,14 @@ describe('cognitoUserPoolDomain', () => {
     sandbox.stub(userPoolFacade, 'getUserPoolId').returns('us-west-2_aBcDeFgHi');
     sandbox.stub(userPool, 'createUserPoolDomain').returns({ promise: () => Promise.reject(new Error('InvalidParameterException: One or more of the CNAMEs you provided are already associated with a different resource. (Service: AmazonCloudFront; Status Code: 409; Error Code: CNAMEAlreadyExists; Request ID: d67bedf3-cadd-11e9-a61f-c578a76c3695)')) });
     sandbox.stub(console, 'error');
-    await expect(command.do('dev')).to.eventually.be.rejectedWith('CNAMEAlreadyExists');
+    await expect(command.do('test')).to.eventually.be.rejectedWith('CNAMEAlreadyExists');
   });
 
   it('undo - unknown error', async () => {
     const command = new CognitoUserPoolDomain({ userPool, userPoolFacade });
     sandbox.stub(userPoolFacade, 'getUserPoolId').returns('us-west-2_aBcDeFgHi');
     sandbox.stub(userPool, 'deleteUserPoolDomain').returns({ promise: () => Promise.reject(new Error('oops')) });
-    await expect(command.undo('dev')).to.eventually.be.rejectedWith('oops');
+    await expect(command.undo('test')).to.eventually.be.rejectedWith('oops');
   });
 
 });

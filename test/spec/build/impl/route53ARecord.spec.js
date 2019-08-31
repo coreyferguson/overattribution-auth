@@ -96,7 +96,7 @@ describe('route53ARecord', () => {
     const response = resourceRecordSetsWithoutARecord;
     sandbox.stub(command, 'getHostedZoneId').returns('/hostedzone/A1B2CDEFGHIJ34');
     sandbox.stub(route53, 'listResourceRecordSets').returns({ promise: () => Promise.resolve(response) });
-    await expect(command.isDone()).to.eventually.be.false;
+    await expect(command.isDone('test')).to.eventually.be.false;
   });
 
   it('isDone - record set found', async () => {
@@ -104,7 +104,7 @@ describe('route53ARecord', () => {
     const response = resourceRecordSetsWithARecord;
     sandbox.stub(command, 'getHostedZoneId').returns('/hostedzone/A1B2CDEFGHIJ34');
     sandbox.stub(route53, 'listResourceRecordSets').returns({ promise: () => Promise.resolve(response) });
-    await expect(command.isDone()).to.eventually.be.true;
+    await expect(command.isDone('test')).to.eventually.be.true;
   });
 
   it('getCloudFrontDns - success', async () => {
@@ -140,7 +140,7 @@ describe('route53ARecord', () => {
     sandbox.stub(route53, 'changeResourceRecordSets').returns({ promise: () => Promise.reject(new Error('oops')) });
     sandbox.stub(command, 'getHostedZoneId');
     sandbox.stub(command, 'getCloudFrontDns');
-    await expect(command.do('dev')).to.eventually.be.rejectedWith('oops');
+    await expect(command.do('test')).to.eventually.be.rejectedWith('oops');
   });
 
   it('undo - error', async () => {
@@ -148,7 +148,7 @@ describe('route53ARecord', () => {
     sandbox.stub(route53, 'changeResourceRecordSets').returns({ promise: () => Promise.reject(new Error('oops')) });
     sandbox.stub(command, 'getHostedZoneId');
     sandbox.stub(command, 'getCloudFrontDns');
-    await expect(command.undo('dev')).to.eventually.be.rejectedWith('oops');
+    await expect(command.undo('test')).to.eventually.be.rejectedWith('oops');
   });
 
 });
@@ -207,7 +207,7 @@ const resourceRecordSetsWithARecord = {
   ResourceRecordSets: [
     ...resourceRecordSetsWithoutARecord.ResourceRecordSets,
     {
-      "Name": "auth.overattribution.com.",
+      "Name": "auth-test.overattribution.com.",
       "Type": "A",
       "ResourceRecords": [],
       "AliasTarget": {

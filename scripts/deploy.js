@@ -1,8 +1,9 @@
 
 const buildInvoker = require('../build/buildInvoker');
 
-const stage = process.argv[2];
-const runListNames = process.argv.slice(3);
+const stage = process.env.stage || 'dev';
+
+const runListNames = process.argv.slice(2);
 const runList = [];
 for (let runListName of runListNames) {
   runList.push(require(`../build/impl/${runListName}`));

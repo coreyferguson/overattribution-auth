@@ -16,7 +16,7 @@ describe('cognitoUserPoolIdpGoogle', () => {
     const command = new CognitoUserPoolIdpGoogle({ userPool, userPoolFacade });
     const response = describeIdentityProviderResponse;
     sandbox.stub(userPool, 'describeIdentityProvider').returns({ promise: () => Promise.resolve(response) });
-    await expect(command.isDone('dev')).to.eventually.be.true;
+    await expect(command.isDone('test')).to.eventually.be.true;
   });
 
   it('isDone - false', async() => {
@@ -25,19 +25,19 @@ describe('cognitoUserPoolIdpGoogle', () => {
     const error = new Error('no idp');
     error.code = 'ResourceNotFoundException';
     sandbox.stub(userPool, 'describeIdentityProvider').returns({ promise: () => Promise.reject(error) });
-    await expect(command.isDone('dev')).to.eventually.be.false;
+    await expect(command.isDone('test')).to.eventually.be.false;
   });
 
   it('do - unknown error', async () => {
     const command = new CognitoUserPoolIdpGoogle({ userPool, userPoolFacade });
     sandbox.stub(userPool, 'createIdentityProvider').returns({ promise: () => Promise.reject(new Error('oops')) });
-    await expect(command.do('dev')).to.be.rejectedWith('oops');
+    await expect(command.do('test')).to.be.rejectedWith('oops');
   });
 
   it('undo - unknown error', async () => {
     const command = new CognitoUserPoolIdpGoogle({ userPool, userPoolFacade });
     sandbox.stub(userPool, 'deleteIdentityProvider').returns({ promise: () => Promise.reject(new Error('oops')) });
-    await expect(command.undo('dev')).to.be.rejectedWith('oops');
+    await expect(command.undo('test')).to.be.rejectedWith('oops');
   });
 
 });
