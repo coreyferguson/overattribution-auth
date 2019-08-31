@@ -15,7 +15,6 @@ class BuildInvoker {
       if (!isDone) {
         console.info('Deploying ' + command.getName());
         await command.do(stage);
-        console.info('Completed ' + command.getName());
       } else {
         console.info(command.getName() + ' already done. Skipping.');
       }
@@ -31,7 +30,6 @@ class BuildInvoker {
       if (isDone) {
         console.info('Removing ' + command.getName());
         await command.undo(stage);
-        console.info('Completed ' + command.getName());
       } else {
         console.info(command.getName() + ' already removed. Skipping.');
       }

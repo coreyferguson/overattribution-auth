@@ -6,7 +6,7 @@
   "scripts": {
     "deploy": "./node_modules/.bin/sls deploy && node scripts/deploy",
     "remove": "node scripts/remove && ./node_modules/.bin/sls remove",
-    "test": "./node_modules/.bin/mocha test/**/*.spec.js --reporter progress",
+    "test": "./node_modules/.bin/mocha 'test/**/*.spec.js' --recursive --reporter progress",
     "test:watch": "npm test -- --watch"
   },
   "keywords": [],

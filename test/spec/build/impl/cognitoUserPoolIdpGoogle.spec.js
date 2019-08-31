@@ -2,6 +2,7 @@
 const CognitoUserPoolIdpGoogle = require('../../../../build/impl/cognitoUserPoolIdpGoogle').CognitoUserPoolIdpGoogle;
 const userPool = require('../../../support/stubs/aws-sdk/stubCognitoIdentityServiceProvider');
 const userPoolFacade = require('../../../support/stubs/build/aws-facades/stubCognitoUserPoolFacade');
+const ssm = require('../../../support/stubs/aws-sdk/stubSsm');
 const { expect, sinon } = require('../../../support/TestUtilities');
 
 describe('cognitoUserPoolIdpGoogle', () => {
@@ -31,6 +32,7 @@ describe('cognitoUserPoolIdpGoogle', () => {
   it('do - unknown error', async () => {
     const command = new CognitoUserPoolIdpGoogle({ userPool, userPoolFacade });
     sandbox.stub(userPool, 'createIdentityProvider').returns({ promise: () => Promise.reject(new Error('oops')) });
+    sandbox.stub(command, 'getCredentials').returns({});
     await expect(command.do('test')).to.be.rejectedWith('oops');
   });
 
@@ -38,6 +40,60 @@ describe('cognitoUserPoolIdpGoogle', () => {
     const command = new CognitoUserPoolIdpGoogle({ userPool, userPoolFacade });
     sandbox.stub(userPool, 'deleteIdentityProvider').returns({ promise: () => Promise.reject(new Error('oops')) });
     await expect(command.undo('test')).to.be.rejectedWith('oops');
+  });
+
+  it('getCredentials - success', async () => {
+    const command = new CognitoUserPoolIdpGoogle({ ssm });
+    sandbox.stub(ssm, 'getParameters').returns({
+      promise: () => Promise.resolve({
+        "Parameters": [
+          {
+            "Name": "/overattribution-auth/test/COGNITO_USER_POOL_IDP_GOOGLE_CLIENT_ID",
+            "Type": "SecureString",
+            "Value": "1234",
+            "Version": 1,
+            "LastModifiedDate": "2019-08-31T18:09:46.492Z",
+            "ARN": "arn:aws:ssm:us-west-2:123456789012:parameter/overattribution-auth/test/COGNITO_USER_POOL_IDP_GOOGLE_CLIENT_ID"
+          },
+          {
+            "Name": "/overattribution-auth/test/COGNITO_USER_POOL_IDP_GOOGLE_SECRET",
+            "Type": "SecureString",
+            "Value": "4321",
+            "Version": 1,
+            "LastModifiedDate": "2019-08-31T18:09:47.159Z",
+            "ARN": "arn:aws:ssm:us-west-2:123456789012:parameter/overattribution-auth/test/COGNITO_USER_POOL_IDP_GOOGLE_SECRET"
+          }
+        ],
+        "InvalidParameters": []
+      })
+    });
+    const credentials = await command.getCredentials('test');
+    expect(credentials).to.deep.equal({
+      COGNITO_USER_POOL_IDP_GOOGLE_CLIENT_ID: '1234',
+      COGNITO_USER_POOL_IDP_GOOGLE_SECRET: '4321'
+    });
+  });
+
+  it('getCredentials - missing parameter', async () => {
+    const command = new CognitoUserPoolIdpGoogle({ ssm });
+    sandbox.stub(ssm, 'getParameters').returns({
+      promise: () => Promise.resolve({
+        "Parameters": [
+          {
+            "Name": "/overattribution-auth/test/COGNITO_USER_POOL_IDP_GOOGLE_CLIENT_ID",
+            "Type": "SecureString",
+            "Value": "1234",
+            "Version": 1,
+            "LastModifiedDate": "2019-08-31T18:09:46.492Z",
+            "ARN": "arn:aws:ssm:us-west-2:123456789012:parameter/overattribution-auth/test/COGNITO_USER_POOL_IDP_GOOGLE_CLIENT_ID"
+          }
+        ],
+        "InvalidParameters": [
+          "/overattribution-auth/test/COGNITO_USER_POOL_IDP_GOOGLE_SECRET"
+        ]
+      })
+    });
+    await expect(command.getCredentials('test')).to.eventually.be.rejected;
   });
 
 });

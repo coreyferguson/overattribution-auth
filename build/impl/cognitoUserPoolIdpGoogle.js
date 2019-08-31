@@ -10,6 +10,7 @@ class CognitoUserPoolIdpGoogle extends BuildCommand {
     options = options || {};
     this.userPool = options.userPool
       || new AWS.CognitoIdentityServiceProvider({ apiVersion: '2016-04-18', region: 'us-west-2' });
+    this.ssm = options.ssm || new AWS.SSM({ apiVersion: '2014-11-06', region: 'us-west-2' });
     this.userPoolFacade = options.userPoolFacade || userPoolFacade;
   }
 
@@ -19,14 +20,15 @@ class CognitoUserPoolIdpGoogle extends BuildCommand {
 
   async do(stage) {
     const UserPoolId = await this.userPoolFacade.getUserPoolId(stage);
+    const credentials = await this.getCredentials(stage);
     await this.userPool.createIdentityProvider({
       ProviderDetails: {
         attributes_url: 'https://people.googleapis.com/v1/people/me?personFields=',
         attributes_url_add_attributes: 'true',
         authorize_scopes: 'profile email openid',
         authorize_url: 'https://accounts.google.com/o/oauth2/v2/auth',
-        client_id: '123456789012-abcdef34ghijk5lmnop67q8rs9tuvwx0.apps.googleusercontent.com',
-        client_secret: 'a_bcDE123FGhij_KlMnOPQRS',
+        client_id: credentials.COGNITO_USER_POOL_IDP_GOOGLE_CLIENT_ID,
+        client_secret: credentials.COGNITO_USER_POOL_IDP_GOOGLE_SECRET,
         oidc_issuer: 'https://accounts.google.com',
         token_request_method: 'POST',
         token_url: 'https://www.googleapis.com/oauth2/v4/token'
@@ -63,6 +65,28 @@ class CognitoUserPoolIdpGoogle extends BuildCommand {
       if (/ResourceNotFoundException/.test(error.code)) return false;
       else throw error;
     };
+  }
+
+  async getCredentials(stage) {
+    const response = await this.ssm.getParameters({
+      Names: [
+        `/overattribution-auth/${stage}/COGNITO_USER_POOL_IDP_GOOGLE_CLIENT_ID`,
+        `/overattribution-auth/${stage}/COGNITO_USER_POOL_IDP_GOOGLE_SECRET`
+      ],
+      WithDecryption: true
+    }).promise();
+    if (response.InvalidParameters && response.InvalidParameters.length > 0)
+      throw new Error(`Missing required credentials: ${response.InvalidParameters}`);
+    const credentials = response.Parameters
+      .map(item => {
+        item.Name = item.Name.replace(`/overattribution-auth/${stage}/`, '');
+        return item;
+      })
+      .reduce((agg, item) => {
+        agg[item.Name] = item.Value
+        return agg;
+      }, {});
+    return credentials;
   }
 
 }
