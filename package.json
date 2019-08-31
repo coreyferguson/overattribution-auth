@@ -6,8 +6,8 @@
   "scripts": {
     "deploy": "./node_modules/.bin/sls deploy && node scripts/deploy dev",
     "remove": "node scripts/remove dev && ./node_modules/.bin/sls remove",
-    "test": "./node_modules/.bin/mocha test/**/*.spec.js",
-    "test:watch": "npm test -- --watch --reporter progress"
+    "test": "./node_modules/.bin/mocha test/**/*.spec.js --reporter progress",
+    "test:watch": "npm test -- --watch"
   },
   "keywords": [],
   "author": "Corey Ferguson <corey.t.ferguson@gmail.com>",
