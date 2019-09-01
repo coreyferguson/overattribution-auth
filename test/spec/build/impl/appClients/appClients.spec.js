@@ -15,9 +15,9 @@ describe('appClients', () => {
   it('isDone - true', async () => {
     const command = new AppClients({
       userPool,
-      userPoolFacade,
-      appClientsConfig: createAppClientsConfig()
+      userPoolFacade
     });
+    sandbox.stub(command, 'getAppClientsConfig').returns(createAppClientsConfig());
     sandbox.stub(userPool, 'listUserPoolClients').returns({
       promise: () => Promise.resolve({
         "UserPoolClients": [
@@ -32,9 +32,9 @@ describe('appClients', () => {
   it('isDone - false - missing one client', async () => {
     const command = new AppClients({
       userPool,
-      userPoolFacade,
-      appClientsConfig: createAppClientsConfig()
+      userPoolFacade
     });
+    sandbox.stub(command, 'getAppClientsConfig').returns(createAppClientsConfig());
     sandbox.stub(userPool, 'listUserPoolClients').returns({
       promise: () => Promise.resolve({
         "UserPoolClients": [
@@ -48,9 +48,9 @@ describe('appClients', () => {
   it('isDone - false - one extra client', async () => {
     const command = new AppClients({
       userPool,
-      userPoolFacade,
-      appClientsConfig: createAppClientsConfig()
+      userPoolFacade
     });
+    sandbox.stub(command, 'getAppClientsConfig').returns(createAppClientsConfig());
     sandbox.stub(userPool, 'listUserPoolClients').returns({
       promise: () => Promise.resolve({
         "UserPoolClients": [
@@ -67,8 +67,8 @@ describe('appClients', () => {
     const command = new AppClients({
       userPool,
       userPoolFacade,
-      appClientsConfig: createAppClientsConfig()
     });
+    sandbox.stub(command, 'getAppClientsConfig').returns(createAppClientsConfig());
     sandbox.stub(userPool, 'listUserPoolClients').returns({
       promise: () => Promise.resolve({
         UserPoolClients: [ { ClientName: "one" } ]
@@ -84,9 +84,9 @@ describe('appClients', () => {
   it('do - delete extra clients', async () => {
     const command = new AppClients({
       userPool,
-      userPoolFacade,
-      appClientsConfig: createAppClientsConfig()
+      userPoolFacade
     });
+    sandbox.stub(command, 'getAppClientsConfig').returns(createAppClientsConfig());
     sandbox.stub(userPool, 'listUserPoolClients').returns({
       promise: () => Promise.resolve({
         UserPoolClients: [ { ClientName: "one" }, { ClientName: "two" }, { ClientName: "deleteme" } ]
@@ -102,9 +102,9 @@ describe('appClients', () => {
   it('undo - delete all clients', async () => {
     const command = new AppClients({
       userPool,
-      userPoolFacade,
-      appClientsConfig: createAppClientsConfig()
+      userPoolFacade
     });
+    sandbox.stub(command, 'getAppClientsConfig').returns(createAppClientsConfig());
     sandbox.stub(userPool, 'listUserPoolClients').returns({
       promise: () => Promise.resolve({
         UserPoolClients: [ { ClientName: "one" }, { ClientName: "two" } ]
@@ -133,6 +133,9 @@ describe('appClients', () => {
       UserPoolId: 'us-west-2_abCdEfG12'
     });
   });
+
+  it('getAppClientsConfig');
+
 });
 
 function createAppClientsConfig() {

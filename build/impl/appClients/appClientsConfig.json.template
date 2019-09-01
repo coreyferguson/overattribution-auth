@@ -12,11 +12,13 @@
       ],
       "CallbackURLs": [
         "https://flashcards{{=it.stage === 'prod' ? '' : `-${it.stage}`}}.overattribution.com/oauth/callback"
+        {{=it.stage !== 'prod' ? ', "http://localhost:8080/oauth/callback"' : ''}}
       ],
       "ClientName": "flashcards",
       "GenerateSecret": false,
       "LogoutURLs": [
         "https://flashcards{{=it.stage === 'prod' ? '' : `-${it.stage}`}}.overattribution.com/oauth/signout"
+        {{=it.stage !== 'prod' ? ', "http://localhost:8080/oauth/signout"' : ''}}
       ],
       "ReadAttributes": [
         "address",

@@ -2,8 +2,10 @@
 const BuildCommand = require('../../BuildCommand');
 const AWS = require('aws-sdk');
 const userPoolFacade = require('../../aws-facades/cognitoUserPoolFacade');
-const appClientsConfig = require('./appClientsConfig.json');
+// const appClientsConfig = require('./appClientsConfig.json');
 const doT = require('dot');
+const fs = require('fs');
+const path = require('path');
 
 class AppClients extends BuildCommand {
 
@@ -13,7 +15,6 @@ class AppClients extends BuildCommand {
     this.userPool = options.userPool
       || new AWS.CognitoIdentityServiceProvider({ apiVersion: '2016-04-18', region: 'us-west-2' });
     this.userPoolFacade = options.userPoolFacade || userPoolFacade;
-    this.appClientsConfig = options.appClientsConfig || appClientsConfig;
   }
 
   getName() {
@@ -21,9 +22,10 @@ class AppClients extends BuildCommand {
   }
 
   async do(stage) {
+    const appClientsConfig = await this.getAppClientsConfig(stage);
     const toBeDeleted = new Map();
     const toBeCreated = new Map();
-    for (let client of this.appClientsConfig.appClients) toBeCreated.set(client.ClientName, client);
+    for (let client of appClientsConfig.appClients) toBeCreated.set(client.ClientName, client);
     const UserPoolId = await this.userPoolFacade.getUserPoolId(stage);
     const response = await this.userPool.listUserPoolClients({ UserPoolId }).promise();
     for (let client of response.UserPoolClients) {
@@ -47,8 +49,9 @@ class AppClients extends BuildCommand {
   }
 
   async isDone(stage) {
+    const appClientsConfig = await this.getAppClientsConfig(stage);
     const expected = new Set();
-    for (let client of this.appClientsConfig.appClients) expected.add(client.ClientName);
+    for (let client of appClientsConfig.appClients) expected.add(client.ClientName);
     const UserPoolId = await this.userPoolFacade.getUserPoolId(stage);
     const response = await this.userPool.listUserPoolClients({ UserPoolId }).promise();
     for (let client of response.UserPoolClients) {
@@ -69,6 +72,13 @@ class AppClients extends BuildCommand {
   async deleteClient(client, UserPoolId) {
     const params = { ClientId: client.ClientId, UserPoolId };
     await this.userPool.deleteUserPoolClient(params).promise();
+  }
+
+  async getAppClientsConfig(stage) {
+    const filePath = path.join(__dirname, 'appClientsConfig.json.template');
+    const content = fs.readFileSync(filePath).toString();
+    const interpolated = doT.template(content)({ stage });
+    return JSON.parse(interpolated);
   }
 
 }

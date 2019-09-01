@@ -20,7 +20,7 @@ describe('CognitoUserPoolFacade', () => {
           "Id": "us-west-2_aBcDeFgHi",
           "LambdaConfig": {},
           "LastModifiedDate": "2019-08-30T03:28:39.320Z",
-          "Name": "auth-overattribution-test"
+          "Name": "overattribution-auth-test"
         }
       ]
     };
@@ -43,6 +43,7 @@ describe('CognitoUserPoolFacade', () => {
   });
 
   it('getUserPoolId - paginated results');
+  it('getClientId');
 
 });
 

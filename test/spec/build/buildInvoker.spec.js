@@ -32,9 +32,7 @@ describe('buildInvoker', () => {
     expect(defaultRunList[1].do).to.be.calledOnce;
     expect(defaultRunList[1].undo).to.not.be.called;
     expect(console.info).to.be.calledWith('Deploying StubCommand1');
-    expect(console.info).to.be.calledWith('Completed StubCommand1');
     expect(console.info).to.be.calledWith('Deploying StubCommand2');
-    expect(console.info).to.be.calledWith('Completed StubCommand2');
   });
 
   it('deploy - runs commands in order', async () => {
@@ -95,9 +93,7 @@ describe('buildInvoker', () => {
     expect(defaultRunList[1].undo).to.be.calledOnce;
     expect(defaultRunList[1].do).to.not.be.called;
     expect(console.info).to.be.calledWith('Removing StubCommand1');
-    expect(console.info).to.be.calledWith('Completed StubCommand1');
     expect(console.info).to.be.calledWith('Removing StubCommand2');
-    expect(console.info).to.be.calledWith('Completed StubCommand2');
   });
 
   it('remove - runs commands in order', async () => {
