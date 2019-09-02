@@ -36,8 +36,38 @@ describe('cognitoIdentityPoolProvider', () => {
     await expect(command.getIdentityPoolId('test')).to.eventually.be.rejected;
   });
 
-  it('getIdentityPoolId - throw error when identity pool cannot be found');
-  it('getIdentityPoolId - pagination');
+  it('getIdentityPoolId - pagination', async () => {
+    const stage = 'test';
+    const command = new CognitoIdentityPoolProvider({ identity });
+    const stubResponse = (IdentityPoolId, IdentityPoolName, NextToken) => ({
+      IdentityPools: [{ IdentityPoolId, IdentityPoolName }],
+      NextToken
+    });
+    sandbox.stub(identity, 'listIdentityPools')
+      .onCall(0).returns({ promise: () => stubResponse('id1', 'overattribution_auth_test1', 'page2') })
+      .onCall(1).returns({ promise: () => stubResponse('id2', 'overattribution_auth_test2', 'page3') })
+      .onCall(2).returns({ promise: () => stubResponse('id3', 'overattribution_auth_test', 'undefined') });
+    const id = await command.getIdentityPoolId('test');
+    expect(identity.listIdentityPools.callCount).to.equal(3);
+    expect(identity.listIdentityPools.getCall(0).args.NextToken).to.be.undefined;
+    expect(identity.listIdentityPools.getCall(1)).to.have.nested.property('args[0].NextToken', 'page2');
+    expect(identity.listIdentityPools.getCall(2)).to.have.nested.property('args[0].NextToken', 'page3');
+    expect(id).to.equal('id3');
+  });
+
+  it('getIdentityPoolId - throw error when identity pool cannot be found', async () => {
+    const stage = 'test';
+    const command = new CognitoIdentityPoolProvider({ identity });
+    const stubResponse = (IdentityPoolId, IdentityPoolName, NextToken) => ({
+      IdentityPools: [{ IdentityPoolId, IdentityPoolName }],
+      NextToken
+    });
+    sandbox.stub(identity, 'listIdentityPools')
+      .onCall(0).returns({ promise: () => stubResponse('id1', 'overattribution_auth_test1', 'page2') })
+      .onCall(1).returns({ promise: () => stubResponse('id2', 'overattribution_auth_test2', 'page3') })
+      .onCall(2).returns({ promise: () => stubResponse('id3', 'overattribution_auth_test3', undefined) });
+    await expect(command.getIdentityPoolId('test')).to.eventually.be.rejected;
+  });
 
   it('do - compiles identity pool id, client id and user pool id', async () => {
     const command = new CognitoIdentityPoolProvider({ identity, userPoolFacade });

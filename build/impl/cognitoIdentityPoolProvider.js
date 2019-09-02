@@ -56,14 +56,18 @@ class CognitoIdentityPoolProvider extends BuildCommand {
 
   async getIdentityPoolId(stage) {
     const identityPoolName = `overattribution_auth_${stage}`;
-    const response = await this.identity.listIdentityPools({
-      MaxResults: '60'
-      // NextToken: 'STRING_VALUE'
-    }).promise();
-    const pools = response.IdentityPools.filter(item => item.IdentityPoolName === identityPoolName);
-    if (pools.length === 0) throw new Error(`no identity pool for stage could be found: ${identityPoolName}`);
-    const pool = pools.length > 0 ? pools[0] : undefined;
-    return pool.IdentityPoolId;
+    let response, NextToken, pool;
+    do {
+      response = await this.identity.listIdentityPools({
+        MaxResults: '60',
+        NextToken
+      }).promise();
+      NextToken = response.NextToken;
+      const pools = response.IdentityPools.filter(item => item.IdentityPoolName === identityPoolName);
+      if (pools.length === 0) continue;
+      else return pools[0].IdentityPoolId;
+    } while (NextToken)
+    throw new Error(`no identity pool for stage could be found: ${identityPoolName}`)
   }
 
   newCognitoIdentityProvider(userPoolId, clientId) {
