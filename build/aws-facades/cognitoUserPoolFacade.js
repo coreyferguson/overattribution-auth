@@ -33,10 +33,14 @@ class CognitoUserPoolFacade {
 
   async getClientId(stage, clientName) {
     const UserPoolId = await this.getUserPoolId(stage);
-    const response = await this.userPool.listUserPoolClients({ UserPoolId }).promise();
-    for (let client of response.UserPoolClients) {
-      if (client.ClientName === 'flashcards') return client.ClientId;
-    }
+    let clientId, response, NextToken;
+    do {
+      response = await this.userPool.listUserPoolClients({ UserPoolId, NextToken }).promise();
+      for (let client of response.UserPoolClients) {
+        if (client.ClientName === clientName) return client.ClientId;
+      }
+      NextToken = response.NextToken;
+    } while (!clientId && NextToken);
     throw new Error(`No client with name found: ${clientName}`);
   }
 
