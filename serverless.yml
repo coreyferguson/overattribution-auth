@@ -34,28 +34,6 @@ resources:
             TemporaryPasswordValidityDays: 7
         UserPoolName: overattribution-auth-${self:provider.stage}
 
-    CognitoUserPoolClientFlashcards:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        AllowedOAuthFlows:
-          - implicit
-        AllowedOAuthFlowsUserPoolClient: true
-        AllowedOAuthScopes:
-          - openid
-          - email
-          - profile
-        CallbackURLs:
-          - https://flashcards-${self:provider.stage}.overattribution.com/oauth/callback
-        ClientName: flashcards
-        DefaultRedirectURI: https://flashcards-${self:provider.stage}.overattribution.com/oauth/callback
-        GenerateSecret: false
-        LogoutURLs:
-          - https://flashcards-${self:provider.stage}.overattribution.com/oauth/signout
-        SupportedIdentityProviders:
-          - COGNITO
-          - Google
-        UserPoolId: !Ref CognitoUserPoolOverAttribution
-
     CognitoIdentityPoolOverAttribution:
       Type: AWS::Cognito::IdentityPool
       Properties:

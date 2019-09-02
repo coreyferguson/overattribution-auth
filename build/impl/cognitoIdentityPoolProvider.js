@@ -18,7 +18,7 @@ class CognitoIdentityPoolProvider extends BuildCommand {
 
   async do(stage) {
     const userPoolId = await this.userPoolFacade.getUserPoolId(stage);
-    const clientId = await this.userPoolFacade.getClientId(stage, 'flashcards');
+    const clientId = await this.userPoolFacade.getClientId(stage, 'flash');
     const IdentityPoolId = await this.getIdentityPoolId(stage);
     const identityPool = await this.identity.describeIdentityPool({ IdentityPoolId }).promise();
     identityPool.CognitoIdentityProviders = identityPool.CognitoIdentityProviders || [];
@@ -36,7 +36,7 @@ class CognitoIdentityPoolProvider extends BuildCommand {
 
   async isDone(stage) {
     const userPoolId = await this.userPoolFacade.getUserPoolId(stage);
-    const clientId = await this.userPoolFacade.getClientId(stage, 'flashcards');
+    const clientId = await this.userPoolFacade.getClientId(stage, 'flash');
     const IdentityPoolId = await this.getIdentityPoolId(stage);
     const identityPool = await this.identity.describeIdentityPool({ IdentityPoolId }).promise();
     if (!identityPool.CognitoIdentityProviders) return false;
