@@ -50,20 +50,21 @@ class Route53ARecord extends BuildCommand {
   async undo(stage) {
     const HostedZoneId = await this.getHostedZoneId();
     const DNSName = await this.getCloudFrontDns(stage);
+    const ResourceRecordSet = {
+      Name: this.getRecordSetName(stage),
+      Type: 'A',
+      AliasTarget: {
+        DNSName,
+        EvaluateTargetHealth: false,
+        HostedZoneId: HOSTED_ZONE_FOR_CLOUD_FORMATION
+      }
+    };
     const response = await this.route53.changeResourceRecordSets({
       ChangeBatch: {
         Changes: [
           {
             Action: 'DELETE',
-            ResourceRecordSet: {
-              Name: this.getRecordSetName(stage),
-              Type: 'A',
-              AliasTarget: {
-                DNSName,
-                EvaluateTargetHealth: false,
-                HostedZoneId: HOSTED_ZONE_FOR_CLOUD_FORMATION
-              }
-            }
+            ResourceRecordSet
           }
         ],
         // Comment: 'Alias to CloudFront for User Pool'

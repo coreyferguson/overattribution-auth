@@ -27,7 +27,7 @@ class CognitoIdentityPoolProvider extends BuildCommand {
   }
 
   async undo(stage) {
-    const userPoolId = 'us-west-2_hR7h3U4gQ';
+    const userPoolId = await this.userPoolFacade.getUserPoolId(stage);
     const IdentityPoolId = await this.getIdentityPoolId(stage);
     const identityPool = await this.identity.describeIdentityPool({ IdentityPoolId }).promise();
     delete identityPool.CognitoIdentityProviders;
