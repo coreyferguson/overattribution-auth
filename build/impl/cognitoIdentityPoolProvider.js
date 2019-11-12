@@ -16,28 +16,33 @@ class CognitoIdentityPoolProvider extends BuildCommand {
     return 'cognitoIdentityPoolProvider';
   }
 
-  async do(stage) {
-    const userPoolId = await this.userPoolFacade.getUserPoolId(stage);
-    const clientId = await this.userPoolFacade.getClientId(stage, 'flash');
-    const IdentityPoolId = await this.getIdentityPoolId(stage);
+  async do(options) {
+    options = options || {};
+    const { config, service, stage } = options;
+    const userPoolId = await this.userPoolFacade.getUserPoolId(service, stage);
+    const clientId = await this.userPoolFacade.getClientId(service, stage, 'flash');
+    const IdentityPoolId = await this.getIdentityPoolId(config.identityPoolName);
     const identityPool = await this.identity.describeIdentityPool({ IdentityPoolId }).promise();
     identityPool.CognitoIdentityProviders = identityPool.CognitoIdentityProviders || [];
     identityPool.CognitoIdentityProviders.push(this.newCognitoIdentityProvider(userPoolId, clientId));
     await this.identity.updateIdentityPool(identityPool).promise();
   }
 
-  async undo(stage) {
-    const userPoolId = await this.userPoolFacade.getUserPoolId(stage);
-    const IdentityPoolId = await this.getIdentityPoolId(stage);
+  async undo(options) {
+    options = options || {};
+    const { config, service, stage } = options;
+    const IdentityPoolId = await this.getIdentityPoolId(config.identityPoolName);
     const identityPool = await this.identity.describeIdentityPool({ IdentityPoolId }).promise();
     delete identityPool.CognitoIdentityProviders;
     await this.identity.updateIdentityPool(identityPool).promise();
   }
 
-  async isDone(stage) {
-    const userPoolId = await this.userPoolFacade.getUserPoolId(stage);
-    const clientId = await this.userPoolFacade.getClientId(stage, 'flash');
-    const IdentityPoolId = await this.getIdentityPoolId(stage);
+  async isDone(options) {
+    options = options || {};
+    const { config, service, stage } = options;
+    const userPoolId = await this.userPoolFacade.getUserPoolId(service, stage);
+    const clientId = await this.userPoolFacade.getClientId(service, stage, 'flash');
+    const IdentityPoolId = await this.getIdentityPoolId(config.identityPoolName);
     const identityPool = await this.identity.describeIdentityPool({ IdentityPoolId }).promise();
     if (!identityPool.CognitoIdentityProviders) return false;
     if (identityPool.CognitoIdentityProviders.length === 0) return false;
@@ -54,8 +59,7 @@ class CognitoIdentityPoolProvider extends BuildCommand {
     return false;
   }
 
-  async getIdentityPoolId(stage) {
-    const identityPoolName = `overattribution_auth_${stage}`;
+  async getIdentityPoolId(identityPoolName) {
     let response, NextToken, pool;
     do {
       response = await this.identity.listIdentityPools({

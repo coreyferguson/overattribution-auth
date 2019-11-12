@@ -18,9 +18,11 @@ class CognitoUserPoolIdpGoogle extends BuildCommand {
     return 'cognitoUserPoolIdpGoogle';
   }
 
-  async do(stage) {
-    const UserPoolId = await this.userPoolFacade.getUserPoolId(stage);
-    const credentials = await this.getCredentials(stage);
+  async do(options) {
+    options = options || {};
+    const { service, stage } = options;
+    const UserPoolId = await this.userPoolFacade.getUserPoolId(service, stage);
+    const credentials = await this.getCredentials(service, stage);
     await this.userPool.createIdentityProvider({
       ProviderDetails: {
         attributes_url: 'https://people.googleapis.com/v1/people/me?personFields=',
@@ -45,16 +47,20 @@ class CognitoUserPoolIdpGoogle extends BuildCommand {
     }).promise();
   }
 
-  async undo(stage) {
-    const UserPoolId = await this.userPoolFacade.getUserPoolId(stage);
+  async undo(options) {
+    options = options || {};
+    const { service, stage } = options;
+    const UserPoolId = await this.userPoolFacade.getUserPoolId(service, stage);
     await this.userPool.deleteIdentityProvider({
       ProviderName: 'Google',
       UserPoolId
     }).promise();
   }
 
-  async isDone(stage) {
-    const UserPoolId = await this.userPoolFacade.getUserPoolId(stage);
+  async isDone(options) {
+    options = options || {};
+    const { service, stage } = options;
+    const UserPoolId = await this.userPoolFacade.getUserPoolId(service, stage);
     try {
       const response = await this.userPool.describeIdentityProvider({
         ProviderName: 'Google',
@@ -67,11 +73,11 @@ class CognitoUserPoolIdpGoogle extends BuildCommand {
     };
   }
 
-  async getCredentials(stage) {
+  async getCredentials(service, stage) {
     const response = await this.ssm.getParameters({
       Names: [
-        `/overattribution-auth/${stage}/COGNITO_USER_POOL_IDP_GOOGLE_CLIENT_ID`,
-        `/overattribution-auth/${stage}/COGNITO_USER_POOL_IDP_GOOGLE_SECRET`
+        `/${service}/${stage}/COGNITO_USER_POOL_IDP_GOOGLE_CLIENT_ID`,
+        `/${service}/${stage}/COGNITO_USER_POOL_IDP_GOOGLE_SECRET`
       ],
       WithDecryption: true
     }).promise();
@@ -79,7 +85,7 @@ class CognitoUserPoolIdpGoogle extends BuildCommand {
       throw new Error(`Missing required credentials: ${response.InvalidParameters}`);
     const credentials = response.Parameters
       .map(item => {
-        item.Name = item.Name.replace(`/overattribution-auth/${stage}/`, '');
+        item.Name = item.Name.replace(`/${service}/${stage}/`, '');
         return item;
       })
       .reduce((agg, item) => {

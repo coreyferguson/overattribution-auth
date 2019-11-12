@@ -1,7 +1,7 @@
 
 service: overattribution-auth
 
-frameworkVersion: "=1.44.1"
+frameworkVersion: "=1.57.0"
 
 provider:
   name: aws
@@ -9,10 +9,21 @@ provider:
   stage: ${opt:stage, env:stage, 'dev'}
   region: us-west-2
 
+plugins:
+  - ./serverless-plugins/serverless-oauth-provider.js
+
+custom:
+  oauthProvider:
+    # domain = `${subDomain}.${domain}`
+    domain: overattribution.com
+    subDomain: auth
+    identityPoolName: overattribution_auth_${self:provider.stage}
+    userPoolName: ${self:service}-${self:provider.stage}
+
 resources:
   Resources:
 
-    CognitoUserPoolOverAttribution:
+    CognitoUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
         AliasAttributes:
@@ -32,18 +43,18 @@ resources:
             RequireSymbols: false
             RequireUppercase: false
             TemporaryPasswordValidityDays: 7
-        UserPoolName: overattribution-auth-${self:provider.stage}
+        UserPoolName: ${self:custom.oauthProvider.userPoolName}
 
-    CognitoIdentityPoolOverAttribution:
+    CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties:
         AllowUnauthenticatedIdentities: true
-        IdentityPoolName: overattribution_auth_${self:provider.stage}
+        IdentityPoolName: ${self:custom.oauthProvider.identityPoolName}
 
-    IdentityPoolOverAttributionUnauthRole:
+    IdentityPoolUnauthRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: overattribution_auth_${self:provider.stage}_identity_pool_unauth_role
+        RoleName: ${self:custom.oauthProvider.identityPoolName}_identity_pool_unauth_role
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -53,11 +64,11 @@ resources:
               Action: sts:AssumeRoleWithWebIdentity
               Condition:
                 StringEquals:
-                  cognito-identity.amazonaws.com:aud: !Ref CognitoIdentityPoolOverAttribution
+                  cognito-identity.amazonaws.com:aud: !Ref CognitoIdentityPool
                 ForAnyValue:StringLike:
                   cognito-identity.amazonaws.com:amr: unauthenticated
         Policies:
-          - PolicyName: overattribution_identity_${self:provider.stage}_unauth_role_default_policy
+          - PolicyName: ${self:custom.oauthProvider.identityPoolName}_unauth_role_default_policy
             PolicyDocument:
               Version: "2012-10-17"
               Statement:
@@ -67,10 +78,10 @@ resources:
                     - "cognito-sync:*"
                   Resource: "*"
 
-    IdentityPoolOverAttributionAuthRole:
+    IdentityPoolAuthRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: overattribution_auth_${self:provider.stage}_identity_pool_auth_role
+        RoleName: ${self:custom.oauthProvider.identityPoolName}_identity_pool_auth_role
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -80,11 +91,11 @@ resources:
               Action: sts:AssumeRoleWithWebIdentity
               Condition:
                 StringEquals:
-                  cognito-identity.amazonaws.com:aud: !Ref CognitoIdentityPoolOverAttribution
+                  cognito-identity.amazonaws.com:aud: !Ref CognitoIdentityPool
                 ForAnyValue:StringLike:
                   cognito-identity.amazonaws.com:amr: authenticated
         Policies:
-          - PolicyName: overattribution_identity_${self:provider.stage}_auth_role_default_policy
+          - PolicyName: ${self:custom.oauthProvider.identityPoolName}_auth_role_default_policy
             PolicyDocument:
               Version: "2012-10-17"
               Statement:
@@ -93,7 +104,7 @@ resources:
                     - "mobileanalytics:PutEvents"
                     - "cognito-sync:*"
                   Resource: "*"
-          - PolicyName: overattribution_identity_${self:provider.stage}_auth_role_apigateway_policy
+          - PolicyName: ${self:custom.oauthProvider.identityPoolName}_identity_${self:provider.stage}_auth_role_apigateway_policy
             PolicyDocument:
               Version: "2012-10-17"
               Statement:
@@ -102,10 +113,10 @@ resources:
                     - "execute-api:Invoke"
                   Resource: "arn:aws:execute-api:us-west-2:863138142000:lbjlned1ph/${self:provider.stage}/*/*"
 
-    IdentityPoolRoleAttachmentOverAttribution:
+    IdentityPoolRoleAttachment:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
       Properties:
-        IdentityPoolId: !Ref CognitoIdentityPoolOverAttribution
+        IdentityPoolId: !Ref CognitoIdentityPool
         Roles:
-          unauthenticated: !GetAtt IdentityPoolOverAttributionUnauthRole.Arn
-          authenticated: !GetAtt IdentityPoolOverAttributionAuthRole.Arn
+          unauthenticated: !GetAtt IdentityPoolUnauthRole.Arn
+          authenticated: !GetAtt IdentityPoolAuthRole.Arn

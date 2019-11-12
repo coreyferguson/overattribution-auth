@@ -11,14 +11,14 @@
         "profile"
       ],
       "CallbackURLs": [
-        "https://flash{{=it.stage === 'prod' ? '' : `-${it.stage}`}}.overattribution.com/oauth/callback"
-        {{=it.stage !== 'prod' ? ', "https://flash-local.overattribution.com:9000/oauth/callback"' : ''}}
+        "https://flash{{=it.stage === 'prod' ? '' : `-${it.stage}`}}.{{=it.domain}}/oauth/callback"
+        {{=it.stage !== 'prod' ? `, "https://flash-local.${it.domain}.com:9000/oauth/callback"` : ''}}
       ],
       "ClientName": "flash",
       "GenerateSecret": false,
       "LogoutURLs": [
-        "https://flash{{=it.stage === 'prod' ? '' : `-${it.stage}`}}.overattribution.com/oauth/signout"
-        {{=it.stage !== 'prod' ? ', "https://flash-local.overattribution.com:9000/oauth/signout"' : ''}}
+        "https://flash{{=it.stage === 'prod' ? '' : `-${it.stage}`}}.{{=it.domain}}.com/oauth/signout"
+        {{=it.stage !== 'prod' ? `, "https://flash-local.${it.domain}.com:9000/oauth/signout"` : ''}}
       ],
       "ReadAttributes": [
         "address",

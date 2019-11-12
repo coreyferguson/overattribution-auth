@@ -12,26 +12,24 @@ class Route53ARecord extends BuildCommand {
     this.route53 = options.route53 || new AWS.Route53({ apiVersion: '2013-04-01', region: 'us-west-2' });
     this.userPool = options.userPool
       || new AWS.CognitoIdentityServiceProvider({ apiVersion: '2016-04-18', region: 'us-west-2' });
-    this.subDomain = options.subDomain || 'auth';
-    this.domain = options.domain || 'overattribution.com';
-    this.dnsName = 'overattribution.com';
-    this.recordSetName = `auth.${this.dnsName}`;
   }
 
   getName() {
     return 'route53ARecord';
   }
 
-  async do(stage) {
-    const HostedZoneId = await this.getHostedZoneId();
-    const DNSName = await this.getCloudFrontDns(stage);
-    const response = await this.route53.changeResourceRecordSets({
+  async do(options) {
+    options = options || {};
+    const { config, stage } = options;
+    const HostedZoneId = await this.getHostedZoneId(config.domain);
+    const DNSName = await this.getCloudFrontDns(config.domain, config.subDomain, stage);
+    await this.route53.changeResourceRecordSets({
       ChangeBatch: {
         Changes: [
           {
             Action: 'CREATE',
             ResourceRecordSet: {
-              Name: this.getRecordSetName(stage),
+              Name: this.getFullDomainName(config.domain, config.subDomain, stage),
               Type: 'A',
               AliasTarget: {
                 DNSName,
@@ -47,11 +45,13 @@ class Route53ARecord extends BuildCommand {
     }).promise();
   }
 
-  async undo(stage) {
-    const HostedZoneId = await this.getHostedZoneId();
-    const DNSName = await this.getCloudFrontDns(stage);
+  async undo(options) {
+    options = options || {};
+    const { config, stage } = options;
+    const HostedZoneId = await this.getHostedZoneId(config.domain);
+    const DNSName = await this.getCloudFrontDns(config.domain, config.subDomain, stage);
     const ResourceRecordSet = {
-      Name: this.getRecordSetName(stage),
+      Name: this.getFullDomainName(config.domain, config.subDomain, stage),
       Type: 'A',
       AliasTarget: {
         DNSName,
@@ -59,7 +59,7 @@ class Route53ARecord extends BuildCommand {
         HostedZoneId: HOSTED_ZONE_FOR_CLOUD_FORMATION
       }
     };
-    const response = await this.route53.changeResourceRecordSets({
+    await this.route53.changeResourceRecordSets({
       ChangeBatch: {
         Changes: [
           {
@@ -74,11 +74,14 @@ class Route53ARecord extends BuildCommand {
 
   }
 
-  async isDone(stage) {
-    const HostedZoneId = await this.getHostedZoneId();
+  async isDone(options) {
+    options = options || {};
+    const { config, stage } = options;
+    const fullDomainName = this.getFullDomainName(config.domain, config.subDomain, stage);
+    const HostedZoneId = await this.getHostedZoneId(config.domain);
     const response = await this.route53.listResourceRecordSets({ HostedZoneId }).promise();
     for (let record of response.ResourceRecordSets) {
-      if (record.Name !== `${this.getRecordSetName(stage)}.`) continue;
+      if (record.Name !== `${fullDomainName}.`) continue;
       if (record.Type !== 'A') continue;
       if (!record.AliasTarget) continue;
       return true;
@@ -86,32 +89,28 @@ class Route53ARecord extends BuildCommand {
     return false;
   }
 
-  async getHostedZoneId() {
-    const response = await this.route53.listHostedZonesByName({ DNSName: `${this.dnsName}.` }).promise();
+  async getHostedZoneId(domain) {
+    const response = await this.route53.listHostedZonesByName({ DNSName: `${domain}.` }).promise();
     if (!response.HostedZones || response.HostedZones.length === 0)
-      throw new Error(`Could not find hosted zone for domain=${this.dnsName}`);
-    for (let hostedZone of response.HostedZones) if (hostedZone.Name === `${this.dnsName}.`)
-      return hostedZone.Id.replace('/hostedzone/', '');
-    throw new Error(`Could not find hosted zone for domain=${this.dnsName}`);
+    throw new Error(`Could not find hosted zone for domain=${domain}.`);
+    for (let hostedZone of response.HostedZones) if (hostedZone.Name === `${domain}.`)
+    return hostedZone.Id.replace('/hostedzone/', '');
+    throw new Error(`Could not find hosted zone for domain=${domain}.`);
   }
 
-  async getCloudFrontDns(stage) {
-    let response = await this.userPool.describeUserPoolDomain({ Domain: this.getFullDomainName(stage) }).promise();
+  async getCloudFrontDns(domain, subDomain, stage) {
+    let response = await this.userPool.describeUserPoolDomain({
+      Domain: this.getFullDomainName(domain, subDomain, stage)
+    }).promise();
     if (!response.DomainDescription || !response.DomainDescription.CloudFrontDistribution)
       throw new Error('No User Pool Domain configured.');
     return response.DomainDescription.CloudFrontDistribution;
   }
 
-  getFullDomainName(stage) {
+  getFullDomainName(domain, subDomain, stage) {
     return stage === 'prod'
-      ? `${this.subDomain}.${this.domain}`
-      : `${this.subDomain}-${stage}.${this.domain}`;
-  }
-
-  getRecordSetName(stage) {
-    return stage === 'prod'
-      ? `${this.subDomain}.${this.dnsName}`
-      : `${this.subDomain}-${stage}.${this.dnsName}`;
+      ? `${subDomain}.${domain}`
+      : `${subDomain}-${stage}.${domain}`;
   }
 
 }

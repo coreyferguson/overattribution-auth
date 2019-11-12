@@ -10,8 +10,6 @@ class CognitoUserPoolDomain extends BuildCommand {
     options = options || {};
     this.userPool = options.userPool
       || new AWS.CognitoIdentityServiceProvider({ apiVersion: '2016-04-18', region: 'us-west-2' });
-    this.subDomain = options.subDomain || 'auth';
-    this.domain = options.domain || 'overattribution.com';
     this.userPoolFacade = options.userPoolFacade || userPoolFacade;
   }
 
@@ -19,38 +17,44 @@ class CognitoUserPoolDomain extends BuildCommand {
     return 'cognitoUserPoolDomain';
   }
 
-  async do(stage) {
-    const userPoolId = await this.userPoolFacade.getUserPoolId(stage);
-    try {
-      await this.userPool.createUserPoolDomain({
-        Domain: this.getFullDomain(stage),
-        UserPoolId: userPoolId,
-        CustomDomainConfig: {
-          CertificateArn: 'arn:aws:acm:us-east-1:863138142000:certificate/078933c7-2e00-415f-b964-ead49b37f915'
-        }
-      }).promise();
-    } catch (err) {
-      if (/CNAMEAlreadyExists/.test(err.message)) {
-        console.error('ERROR: CNAME already exists. Try waiting 15 minutes and redeploy.');
+  async do(options) {
+    options = options || {};
+    const { config, service, stage } = options;
+    const userPoolId = await this.userPoolFacade.getUserPoolId(service, stage);
+    await this.userPool.createUserPoolDomain({
+      Domain: this.getFullDomain(config.domain, config.subDomain, stage),
+      UserPoolId: userPoolId,
+      CustomDomainConfig: {
+        CertificateArn: 'arn:aws:acm:us-east-1:863138142000:certificate/078933c7-2e00-415f-b964-ead49b37f915'
       }
-      throw err;
-    }
+    }).promise();
   }
 
-  async undo(stage) {
-    const userPoolId = await this.userPoolFacade.getUserPoolId(stage);
-    await this.userPool.deleteUserPoolDomain({ Domain: this.getFullDomain(stage), UserPoolId: userPoolId }).promise();
+  async undo(options) {
+    options = options || {};
+    const { config, stage } = options;
+    options = options || {};
+    const { service, stage } = options;
+    const userPoolId = await this.userPoolFacade.getUserPoolId(service, stage);
+    await this.userPool.deleteUserPoolDomain({
+      Domain: this.getFullDomain(config.domain, config.subDomain, stage),
+      UserPoolId: userPoolId
+    }).promise();
   }
 
-  async isDone(stage) {
-    const meta = await this.userPool.describeUserPoolDomain({ Domain: this.getFullDomain(stage) }).promise();
+  async isDone(options) {
+    options = options || {};
+    const { config, stage } = options;
+    const meta = await this.userPool.describeUserPoolDomain({
+      Domain: this.getFullDomain(config.domain, config.subDomain, stage)
+    }).promise();
     return !!meta.DomainDescription.Status;
   }
 
-  getFullDomain(stage) {
+  getFullDomain(domain, subDomain, stage) {
     return stage === 'prod'
-      ? `${this.subDomain}.${this.domain}`
-      : `${this.subDomain}-${stage}.${this.domain}`;
+      ? `${subDomain}.${domain}`
+      : `${subDomain}-${stage}.${domain}`;
   }
 
 }

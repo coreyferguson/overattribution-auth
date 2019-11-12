@@ -7,11 +7,10 @@ class CognitoUserPoolFacade {
     options = options || {};
     this.userPool = options.userPool
       || new AWS.CognitoIdentityServiceProvider({ apiVersion: '2016-04-18', region: 'us-west-2' });
-    this.userPoolName = options.userPoolName || 'overattribution-auth'; // from serverless.yml
   }
 
-  async getUserPoolId(stage) {
-    const userPoolName = this.getUserPoolName(stage);
+  async getUserPoolId(service, stage) {
+    const userPoolName = this.getUserPoolName(service, stage);
     let data, NextToken, userPoolId;
     do {
       data = await this.userPool.listUserPools({ MaxResults: 60, NextToken }).promise();
@@ -27,12 +26,12 @@ class CognitoUserPoolFacade {
     return userPoolId;
   }
 
-  getUserPoolName(stage) {
-    return `${this.userPoolName}-${stage}`;
+  getUserPoolName(service, stage) {
+    return `${service}-${stage}`;
   }
 
-  async getClientId(stage, clientName) {
-    const UserPoolId = await this.getUserPoolId(stage);
+  async getClientId(service, stage, clientName) {
+    const UserPoolId = await this.getUserPoolId(service, stage);
     let clientId, response, NextToken;
     do {
       response = await this.userPool.listUserPoolClients({ UserPoolId, NextToken }).promise();
