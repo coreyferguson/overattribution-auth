@@ -32,9 +32,7 @@ class CognitoUserPoolDomain extends BuildCommand {
 
   async undo(options) {
     options = options || {};
-    const { config, stage } = options;
-    options = options || {};
-    const { service, stage } = options;
+    const { config, service, stage } = options;
     const userPoolId = await this.userPoolFacade.getUserPoolId(service, stage);
     await this.userPool.deleteUserPoolDomain({
       Domain: this.getFullDomain(config.domain, config.subDomain, stage),

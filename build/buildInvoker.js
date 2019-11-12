@@ -41,10 +41,10 @@ class BuildInvoker {
     let command, isDone;
     for (let i=runList.length-1; i>=0; i--) {
       command = runList[i];
-      isDone = await command.isDone(stage, log);
+      isDone = await command.isDone(options);
       if (isDone) {
         log('Removing ' + command.getName());
-        await command.undo(stage, log);
+        await command.undo(options);
       } else {
         log(command.getName() + ' already removed. Skipping.');
       }

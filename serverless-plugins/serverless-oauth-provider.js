@@ -28,7 +28,8 @@ class ServerlessPlugin {
 
     this.hooks = {
       'set-provider-secret:set-secret': this.setProviderSecret.bind(this),
-      'after:deploy:deploy': this.afterDeploy.bind(this)
+      'after:deploy:deploy': this.afterDeploy.bind(this),
+      'before:remove:remove': this.beforeRemove.bind(this),
     };
   }
 
@@ -61,6 +62,18 @@ class ServerlessPlugin {
     const service = this.serverless.service.service;
     const config = this.serverless.service.custom.oauthProvider;
     await buildInvoker.deploy({
+      service,
+      stage,
+      log: this.serverless.cli.log.bind(this.serverless.cli),
+      config
+    });
+  }
+
+  async beforeRemove() {
+    const stage = this.serverless.service.provider.stage;
+    const service = this.serverless.service.service;
+    const config = this.serverless.service.custom.oauthProvider;
+    await buildInvoker.remove({
       service,
       stage,
       log: this.serverless.cli.log.bind(this.serverless.cli),
