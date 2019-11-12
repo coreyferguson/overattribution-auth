@@ -17,18 +17,10 @@ Register an app with Google to obtain client id and secret using Step 1 in [this
 
 Store those values in AWS Parameter Store
 
-```
-$ aws ssm put-parameter \
---name /overattribution-auth/{stage}/COGNITO_USER_POOL_IDP_GOOGLE_SECRET \
---value "{your_google_secret}" \
---type SecureString \
---overwrite
-
-$ aws ssm put-parameter \
---name /overattribution-auth/{stage}/COGNITO_USER_POOL_IDP_GOOGLE_CLIENT_ID \
---value "{your_google_client_id}" \
---type SecureString \
---overwrite
+```bash
+stage=dev ./node_modules/.bin/sls set-provider-secret \
+  --client-id=clientIdValue \
+  --secret=secretValue
 ```
 
 ### Ongoing
